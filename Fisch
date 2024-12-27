@@ -1,0 +1,511 @@
+local Player = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local LocalPlayer = Player.LocalPlayer
+local Char = LocalPlayer.Character
+local HR = Char.HumanoidRootPart
+local StandHR = HR.CFrame
+
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Gus x Hub " .. Fluent.Version,
+    SubTitle = "by Zxn",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(600, 500),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
+
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Tabs = {
+    General = Window:AddTab({ Title = "General", Icon = "home" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    Totem = Window:AddTab({ Title = "Totem", Icon = "gem" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+
+  Tabs.General:AddParagraph({
+        Title = "Farming 🐟",
+        Content = ""
+    })
+ Tabs.Teleport:AddParagraph({
+        Title = "Teleport island 🏝️",
+        Content = ""
+    })
+
+ Tabs.Totem:AddParagraph({
+        Title = "Buy Totem 💎",
+        Content = ""
+    })
+
+local Options = Fluent.Options
+
+do
+    Fluent:Notify({
+        Title = "Notification",
+        Content = "This is a notification",
+        SubContent = "SubContent", -- Optional
+        Duration = 5 -- Set to nil to make the notification not disappear
+    })
+
+
+
+   
+
+   Tabs.General:AddButton({
+    Title = "Boost FPS",
+    Callback = function()
+        local function FPSBooster()
+            local decalsyeeted = true
+            local g = game
+            local w = g.Workspace
+            local l = g.Lighting
+            local t = w.Terrain
+
+            pcall(function() sethiddenproperty(l, "Technology", 2) end)
+            pcall(function() sethiddenproperty(t, "Decoration", false) end)
+            
+            t.WaterWaveSize = 0
+            t.WaterWaveSpeed = 0
+            t.WaterReflectance = 0
+            t.WaterTransparency = 0
+            l.GlobalShadows = false
+            l.FogEnd = 9e9
+            l.Brightness = 0
+            pcall(function() settings().Rendering.QualityLevel = "Level01" end)
+
+            for _, v in pairs(g:GetDescendants()) do
+                pcall(function()
+                    if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+                        v.Material = "Plastic"
+                        v.Reflectance = 0
+                    elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+                        v.Transparency = 1
+                    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                        v.Lifetime = NumberRange.new(0)
+                    elseif v:IsA("Explosion") then
+                        v.BlastPressure = 1
+                        v.BlastRadius = 1
+                    elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                        v.Enabled = false
+                    elseif v:IsA("MeshPart") then
+                        v.Material = "Plastic"
+                        v.Reflectance = 0
+                        v.TextureID = 10385902758728957
+                    end
+                end)
+            end
+
+            for _, e in pairs(l:GetChildren()) do
+                pcall(function()
+                    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+                        e.Enabled = false
+                    end
+                end)
+            end
+
+            print("FPS Booster Applied.")
+        end
+
+        local success, errorMsg = pcall(FPSBooster)
+        if not success then
+            warn("Error occurred in FPSBooster: " .. errorMsg)
+        end
+    end
+})
+
+
+
+--Autocast
+local Cast: any = Tabs.General:AddToggle("MyToggle", {Title = "AutoCast", Default = false})
+
+Cast:OnChanged(function(v)
+    _G.AutoCast = v
+    pcall(function()
+        while _G.AutoCast do
+            wait(0.1)
+            local Rod: Tool? = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+            if Rod and Rod.events and Rod.events.cast then
+                Rod.events.cast:FireServer(100, 1)
+            end
+        end
+    end)
+end)
+
+Options.MyToggle:SetValue(false)
+
+--AutoShake
+local Shake: any = Tabs.General:AddToggle("MyToggle", {Title = "AutoShake", Default = false})
+
+Shake:OnChanged(function(v)
+    _G.AutoShake = v
+    pcall(function()
+        while _G.AutoShake do
+            task.wait(0.01)
+            local GUI = LocalPlayer.PlayerGui
+local shakeui = GUI:FindFirstChild("shakeui")
+     if shakeui and shakeui.Enabled then
+		  local  safezone = shakeui:FindFirstChild("safezone")
+	if safezone then
+		local button = safezone:FindFirstChild("button")
+	if button and button:IsA("ImageButton") and button.Visible then
+
+		GuiService.SelectedCoreObject = button
+		VirtualInputManager:SendKeyEvent(true,Enum.KeyCode.Return,false,game)
+		VirtualInputManager:SendKeyEvent(false,Enum.KeyCode.Return,false,game)
+	      end
+	   end
+	 end
+
+        end
+    end)
+end)
+
+--AutoReel
+local Reel: any = Tabs.General:AddToggle("MyToggle", {Title = "AutoReel", Default = false})
+
+Reel:OnChanged(function(v: any)
+    _G.AutoReel = v
+    pcall(function()
+        while _G.AutoReel do
+            task.wait(0.15) -- รอ 0.15 วินาที
+            for _, v in pairs(LocalPlayer.PlayerGui:GetChildren()) do
+                if v:IsA("ScreenGui") and v.Name == "reel" then
+                    if v:FindFirstChild("bar") then
+                        local reelFinished = game:GetService("ReplicatedStorage"):FindFirstChild("events")
+                        if reelFinished and reelFinished:FindFirstChild("reelfinished") then
+                            reelFinished.reelfinished:FireServer(100, true)
+                        else
+                            warn("reelfinished event not found in ReplicatedStorage")
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+Options.MyToggle:SetValue(false)
+
+
+
+-- Freeze character
+local FreezeCharacter = Tabs.General:AddToggle("FreezeCharacter", {Title = "Freeze Character", Default = false})
+
+FreezeCharacter:OnChanged(function(value)
+    local character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local oldPos = humanoidRootPart.CFrame -- เก็บตำแหน่งเดิมของตัวละคร
+
+    if value then
+        -- เมื่อเปิด Freeze Character
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if FreezeCharacter.Value then
+                humanoidRootPart.CFrame = oldPos -- ล็อกตำแหน่งตัวละคร
+            end
+        end)
+    end
+end)
+
+
+
+--Island
+Options.MyToggle:SetValue(false) -- ตั้งค่าเริ่มต้นให้ Toggle ปิดอยู่
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Moosewood", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(387.498199, 135.233612, 214.592621, 0.166554421, 7.33144603e-08, 0.986032248, -6.94334972e-08, 1, -6.26247356e-08, -0.986032248, -5.80332369e-08, 0.166554421)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Roslit Bay", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1477.76538, 133.075317, 705.640991, -0.294915289, -3.81724981e-08, -0.955523431, -1.66588365e-09, 1, -3.94351432e-08, 0.955523431, -1.00382351e-08, -0.294915289)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Sunstone Island", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-930.140442, 135.252274, -1129.97632, -0.966053069, 2.04304804e-08, -0.258343726, 1.5084856e-08, 1, 2.26740902e-08, 0.258343726, 1.8007297e-08, -0.966053069)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Forsaken Shores", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2683.08105, 164.750015, 1732.61377, -0.580203533, -9.59384483e-09, 0.814471543, -3.12534354e-08, 1, -1.04847242e-08, -0.814471543, -3.15383097e-08, -0.580203533)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Terrapin Island", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-70.6108398, 140.484741, 2056.24194, 0.708128452, 6.95810769e-08, 0.706083655, -2.04398565e-09, 1, -9.64951852e-08, -0.706083655, 6.68877647e-08, 0.708128452)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Statue Of Sovereignty", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(50.7281609, 131.301468, -1008.27209, 0.99791193, -2.40585596e-08, 0.0645894781, 2.42441249e-08, 1, -2.08922346e-09, -0.0645894781, 3.65077635e-09, 0.99791193)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Mushgrove Swamp", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2658.93872, 133.499878, -764.809998, -0.174091652, -9.77454206e-08, 0.984729469, 3.73614171e-08, 1, 1.0586637e-07, -0.984729469, 5.52213386e-08, -0.174091652)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Snowcap Island", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2638.39062, 142.962006, 2498.70679, 0.363430023, -6.8919384e-08, 0.931621492, 4.01261353e-08, 1, 5.83244848e-08, -0.931621492, 1.61855009e-08, 0.363430023)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Northern Expedition (New)", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(19627.2441, 131.420105, 5230.7627, 0.492241055, 2.28544952e-08, 0.870458901, -9.58930571e-08, 1, 2.7971458e-08, -0.870458901, -9.72396634e-08, 0.492241055)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Ancient Isle", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(6049.57568, 195.140152, 285.709076, 0.1594152, -3.63793475e-08, -0.987211645, 4.02978912e-08, 1, -3.03432941e-08, 0.987211645, -3.49453622e-08, 0.1594152)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "The Depths", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(972.963135, -701.555359, 1252.81177, -0.585426927, -7.24480786e-09, 0.810725152, -1.45674433e-08, 1, -1.58298519e-09, -0.810725152, -1.27369155e-08, -0.585426927)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+
+local Toggle = Tabs.Teleport:AddToggle("MyToggle", {Title = "Desolate Deep", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1656.68689, -213.981506, -2842.55005, 0.0378030315, -1.51799462e-08, 0.999285221, 3.02311918e-08, 1, 1.40471563e-08, -0.999285221, 2.96785583e-08, 0.0378030315)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Aurora Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1810.00232, -136.559189, -3281.60229, 0.507512391, -5.67323859e-08, 0.861644447, 4.2958046e-08, 1, 4.05395113e-08, -0.861644447, 1.64402572e-08, 0.507512391)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Meteor Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1950.35083, 274.366669, 234.589569, 0.635068595, -4.88222369e-08, -0.772455752, 6.76029615e-08, 1, -7.62467245e-09, 0.772455752, -4.7378105e-08, 0.635068595)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Ecelipse Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(5969.20264, 274.10849, 844.77594, 0.731101394, -5.62941196e-08, -0.682268858, 1.27513529e-08, 1, -6.88461554e-08, 0.682268858, 4.1633669e-08, 0.731101394)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Sundial Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1146.24023, 134.5, -1074.86707, 0.905125201, 8.26995858e-08, -0.42514509, -5.05698026e-08, 1, 8.68587762e-08, 0.42514509, -5.71185623e-08, 0.905125201)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Windset Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2847.84082, 178.336136, 2701.98145, -0.710414588, -3.47553133e-08, -0.703783453, -1.53729491e-08, 1, -3.38657387e-08, 0.703783453, -1.32394886e-08, -0.710414588)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Smokescreen Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(2788.98145, 139.807922, -624.672058, 0.513734043, 4.87176237e-08, -0.857949495, -5.95842913e-08, 1, 2.11051407e-08, 0.857949495, 4.02778824e-08, 0.513734043)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Blizzard Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(20145.4043, 742.952759, 5804.43359, -0.925064266, -7.11468573e-08, -0.379810661, -3.58470587e-08, 1, -1.00013068e-07, 0.379810661, -7.89034189e-08, -0.925064266)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Totem:AddToggle("MyToggle", {Title = "Avalanche  Totem", Default = false})
+
+Toggle:OnChanged(function(value)
+    if value then
+        -- เมื่อเปิด Toggle (ไปยังตำแหน่ง Moosewood)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(19707.75, 467.630585, 6061.35791, 0.917969644, 1.12550339e-07, 0.396650642, -8.69812382e-08, 1, -8.2450903e-08, -0.396650642, 4.1186258e-08, 0.917969644)
+    else
+        -- เมื่อปิด Toggle (สามารถเปลี่ยนเป็นตำแหน่งอื่นหรือลบฟังก์ชันนี้ได้)
+        warn("Toggle ถูกปิด แต่ไม่มีการเปลี่ยนตำแหน่ง")
+    end
+end)
+
+local Toggle = Tabs.Settings:AddToggle("WalkOnWater", {Title = "Walk on Water", Default = false})
+
+Toggle:OnChanged(function(value)
+    for _, v in pairs(workspace.zones.fishing:GetChildren()) do
+        if v.Name == "Ocean" or v.Name == "Deep Ocean" then
+            v.CanCollide = value -- ใช้ค่าจาก Toggle เพื่อเปิด/ปิดการชน
+        end
+    end
+end)
+
+Options.MyToggle:SetValue(false) -- ตั้งค่า Toggle เริ่มต้นเป็น false
+
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
+
+-- Hand the library over to our managers
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- You can add indexes of elements the save manager should ignore
+SaveManager:SetIgnoreIndexes({})
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
+end
