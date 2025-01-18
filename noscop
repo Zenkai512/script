@@ -1,0 +1,264 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Manaw Hub " .. Fluent.Version,
+    SubTitle = "by Zxn | Version 0.0.1 ",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+})
+
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Tabs = {
+    General = Window:AddTab({ Title = "General", Icon = "home" }),
+	Esp = Window:AddTab({ Title = "Esp player", Icon = "bell" }),
+	Aimbot = Window:AddTab({ Title = "Aimbot", Icon = "users" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+local Options = Fluent.Options
+
+do
+    Fluent:Notify({
+        Title = "Notification",
+        Content = "Manaw Hub",
+        SubContent = "", -- Optional
+        Duration = 5 -- Set to nil to make the notification not disappear
+    })
+
+
+Tabs.Aimbot:AddParagraph({
+        Title = "Coming Soon❗",
+    })
+
+
+
+    Tabs.General:AddParagraph({
+        Title = "How to use it❓",
+        Content = "Use the Select player function in conjunction with the teleport player"
+    })
+
+
+    Tabs.General:AddButton({
+        Title = "Boost FPS⭐",
+		Description  = "If you press boost fps it will make your mobile phone and computer better. Suitable for mobile phones and bad computers👑",
+        Callback = function()
+            local function FPSBooster()
+                local decalsyeeted = true
+                local g = game
+                local w = g.Workspace
+                local l = g.Lighting
+                local t = w.Terrain
+    
+                pcall(function() sethiddenproperty(l, "Technology", 2) end)
+                pcall(function() sethiddenproperty(t, "Decoration", false) end)
+                
+                t.WaterWaveSize = 0
+                t.WaterWaveSpeed = 0
+                t.WaterReflectance = 0
+                t.WaterTransparency = 0
+                l.GlobalShadows = false
+                l.FogEnd = 9e9
+                l.Brightness = 0
+                pcall(function() settings().Rendering.QualityLevel = "Level01" end)
+    
+                for _, v in pairs(g:GetDescendants()) do
+                    pcall(function()
+                        if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+                            v.Material = "Plastic"
+                            v.Reflectance = 0
+                        elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+                            v.Transparency = 1
+                        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                            v.Lifetime = NumberRange.new(0)
+                        elseif v:IsA("Explosion") then
+                            v.BlastPressure = 1
+                            v.BlastRadius = 1
+                        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                            v.Enabled = false
+                        elseif v:IsA("MeshPart") then
+                            v.Material = "Plastic"
+                            v.Reflectance = 0
+                            v.TextureID = 10385902758728957
+                        end
+                    end)
+                end
+    
+                for _, e in pairs(l:GetChildren()) do
+                    pcall(function()
+                        if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+                            e.Enabled = false
+                        end
+                    end)
+                end
+    
+                print("FPS Booster Applied.")
+            end
+    
+            local success, errorMsg = pcall(FPSBooster)
+            if not success then
+                warn("Error occurred in FPSBooster: " .. errorMsg)
+            end
+        end
+    })
+    
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local Dropdown = Tabs.General:AddDropdown("Dropdown", {
+    Title = "Select Player⚜",
+    Description = "If you press this function it will search for players",
+    Values = {}, -- จะเติมรายชื่อผู้เล่น
+    Multi = false,
+    Default = "", -- เลือกผู้เล่นเริ่มต้น (หากมี)
+})
+
+local Toggle = Tabs.General:AddToggle("MyToggle", {
+    Title = "Auto Teleport ⚔",
+    Description = "If you press this function it will auto teleport to the player",
+    Default = false,
+})
+
+local isTeleporting = false -- สถานะลูป
+
+-- ฟังก์ชันสำหรับอัปเดตรายชื่อผู้เล่นใน dropdown
+local function updateDropdown()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    Dropdown:SetValues(playerNames)
+end
+
+-- อัปเดตรายชื่อผู้เล่นเมื่อเริ่มต้น
+updateDropdown()
+
+-- อัปเดตรายชื่อผู้เล่นแบบเรียลไทม์
+Players.PlayerAdded:Connect(updateDropdown)
+Players.PlayerRemoving:Connect(updateDropdown)
+
+-- ฟังก์ชันสำหรับเทเลพอร์ต
+local function teleportToPlayer()
+    while isTeleporting do
+        local selectedPlayerName = Dropdown.Value
+        if selectedPlayerName and selectedPlayerName ~= "" then
+            local selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+            if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+                local offset = Vector3.new(2, 0, 0) -- เพิ่มระยะข้างในแกน X
+
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + offset)
+                end
+            end
+        end
+        task.wait(0.1) -- รอ 0.1 วินาทีก่อนวาร์ปรอบถัดไป
+    end
+end
+
+-- เมื่อ Toggle เปลี่ยนสถานะ
+Toggle:OnChanged(function(isEnabled)
+    isTeleporting = isEnabled -- อัปเดตสถานะการเทเลพอร์ต
+    if isTeleporting then
+        teleportToPlayer() -- เริ่มลูปการเทเลพอร์ต
+    end
+end)
+
+
+-- ตัวแปรเก็บสถานะ ESP
+local ESPEnabled = false
+
+-- ฟังก์ชันสำหรับเปิด/ปิด ESP
+local function ToggleESP(enabled)
+    ESPEnabled = enabled
+    if ESPEnabled then
+        -- เปิด ESP
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                local highlight = player.Character:FindFirstChildOfClass("Highlight")
+                if not highlight then
+                    local newHighlight = Instance.new("Highlight")
+                    newHighlight.Parent = player.Character
+                    newHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+                    newHighlight.FillTransparency = 0.5
+                    newHighlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    newHighlight.OutlineTransparency = 0
+                end
+            end
+        end
+    else
+        -- ปิด ESP
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Character then
+                local highlight = player.Character:FindFirstChildOfClass("Highlight")
+                if highlight then
+                    highlight:Destroy()
+                end
+            end
+        end
+    end
+end
+
+-- การเชื่อมต่อ Toggle กับ ESP
+local Toggle = Tabs.Esp:AddToggle("MyToggle", {
+	Title = "Esp Player",
+	Description = "If player doesn't load Turn off and open the new function",
+	 Default = false,
+ })
+
+Toggle:OnChanged(function()
+    print("Toggle changed:", Options.MyToggle.Value)
+    ToggleESP(Options.MyToggle.Value) -- เปิด/ปิด ESP ตามค่า Toggle
+end)
+
+-- ตั้งค่าเริ่มต้นของ Toggle
+Options.MyToggle:SetValue(false)
+
+   
+
+
+
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
+
+-- Hand the library over to our managers
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
+
+-- You can add indexes of elements the save manager should ignore
+SaveManager:SetIgnoreIndexes({})
+
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
+end
