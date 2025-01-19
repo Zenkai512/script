@@ -107,6 +107,113 @@ Tabs.Aimbot:AddParagraph({
     })
     
 
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ค้นหา SpawnLocation ที่อยู่ใน Workspace
+local spawnLocation = workspace:FindFirstChild("SpawnLocation")
+
+-- ตรวจสอบว่าเจอ SpawnLocation หรือไม่
+if not spawnLocation then
+    warn("ไม่พบ SpawnLocation ใน Workspace!")
+    return
+end
+
+-- ฟังก์ชันสำหรับตรวจสอบว่า ผู้เล่นยืนอยู่ใน SpawnLocation หรือไม่
+local function isInSpawnLocation(character)
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = character.HumanoidRootPart
+        local spawnPos = spawnLocation.Position
+        local spawnRadius = spawnLocation.Size.X / 2  -- ใช้ขนาดของ SpawnLocation เพื่อกำหนดรัศมีในการตรวจสอบ
+
+        -- ตรวจสอบว่าตัวละครอยู่ภายในพื้นที่ของ SpawnLocation
+        return (humanoidRootPart.Position - spawnPos).Magnitude <= spawnRadius
+    end
+    return false
+end
+
+-- ตัวแปรเพื่อตรวจสอบสถานะของ Toggle
+local isTeleporting = false
+
+-- ฟังก์ชันสำหรับวาร์ปไปหาผู้เล่นคนแรกที่พบ
+local function teleportToRandomPlayer()
+    while isTeleporting do  -- ทำงานต่อไปจนกว่า isTeleporting จะเป็น false
+        -- หา list ของผู้เล่นทั้งหมดในเกม
+        local playersInGame = Players:GetPlayers()
+        
+        -- ลบตัวเองออกจาก list
+        table.remove(playersInGame, table.find(playersInGame, player))
+
+        -- ตรวจสอบว่ามีผู้เล่นคนอื่นหรือไม่
+        if #playersInGame > 0 then
+            -- เลือกผู้เล่นแบบสุ่มจาก list
+            local targetPlayer = playersInGame[math.random(1, #playersInGame)]
+            
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                -- ตรวจสอบว่าผู้เล่นอยู่ใน SpawnLocation หรือไม่
+                if isInSpawnLocation(targetPlayer.Character) then
+                    continue  -- ข้ามไปยังผู้เล่นคนถัดไป
+                end
+                
+                -- วาร์ปไปยังตำแหน่งของผู้เล่นเป้าหมาย
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+                    
+                    -- วาร์ปติดตามผู้เล่นเรื่อยๆ
+                    while targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") do
+                        -- ถ้า Toggle ถูกปิดให้หยุดการทำงาน
+                        if not isTeleporting then
+                            return
+                        end
+                        
+                        -- ตรวจสอบเลือดของผู้เล่น
+                        local targetHumanoid = targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+                        if targetHumanoid and targetHumanoid.Health <= 0 then
+                            wait(1)  -- รอ 1 วินาทีหลังจากฆ่าผู้เล่นแล้ว
+                            break  -- หยุดติดตามผู้เล่นที่เลือดหมดแล้ว
+                        end
+                        
+                        -- วาร์ปไปยังตำแหน่งใหม่ของผู้เล่น
+                        targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+                        player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+                        wait(0.1)  -- ปรับความเร็วในการติดตามผู้เล่น
+                    end
+                end
+            end
+        else
+            warn("ไม่พบผู้เล่นอื่นในเกม!")
+            break
+        end
+    end
+end
+
+-- เชื่อมกับ Toggle เพื่อเปิด/ปิดการทำงานของฟังก์ชัน
+local Toggle = Tabs.Esp:AddToggle("MyToggle", {
+	Title = "Kill all😱",
+	Description = "Use a knife. Warnin❗ If used for a long time, it may cause kicking",
+	 Default = false
+	 })
+
+Toggle:OnChanged(function()
+    -- เมื่อ Toggle เปลี่ยนแปลง
+    isTeleporting = Toggle.Value  -- อัปเดตสถานะของการ teleport
+
+    if isTeleporting then
+        -- ถ้า Toggle เปิดใช้งาน ให้เริ่มฟังก์ชัน teleportToRandomPlayer
+        teleportToRandomPlayer()
+    else
+        -- ถ้า Toggle ปิดการใช้งาน ฟังก์ชันจะหยุดทำงาน
+        warn("Teleporting stopped!")
+    end
+end)
+
+-- ตั้งค่าเริ่มต้นของ Toggle เป็น false (ปิด)
+Toggle:SetValue(false)
+
+
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -208,7 +315,7 @@ end
 
 -- การเชื่อมต่อ Toggle กับ ESP
 local Toggle = Tabs.Esp:AddToggle("MyToggle", {
-	Title = "Esp Player",
+	Title = "Esp Player🔔",
 	Description = "If player doesn't load Turn off and open the new function",
 	 Default = false,
  })
